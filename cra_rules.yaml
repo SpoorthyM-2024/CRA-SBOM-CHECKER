@@ -1,0 +1,176 @@
+# CRA Compliance Rules Configuration
+# Based on EU Cyber Resilience Act Annex I
+# Part I: Product Security Requirements
+# Part II: Vulnerability Handling Requirements
+
+metadata:
+  title: "EU Cyber Resilience Act — SBOM Compliance Rules"
+  version: "1.0.0"
+  regulation: "EU CRA Annex I"
+  enforceable_date: "2027-12-11"
+  reference: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202402847"
+
+# ─────────────────────────────────────────────
+# COMPONENT-LEVEL RULES
+# Applied to every component found in the SBOM
+# ─────────────────────────────────────────────
+component_rules:
+
+  - id: "COMP-01"
+    cra_ref: "Annex I, Part II, §1"
+    title: "Component must have a name"
+    description: >
+      CRA requires all components to be identified and documented.
+      Every component must have a clearly declared name.
+    field: "name"
+    check: "not_empty"
+    severity: "HIGH"
+    nist_mapping: "ID.AM-02"
+
+  - id: "COMP-02"
+    cra_ref: "Annex I, Part II, §1"
+    title: "Component must have a version"
+    description: >
+      CRA requires version information for all components to enable
+      accurate vulnerability tracking and remediation.
+    field: "version"
+    check: "not_empty"
+    severity: "HIGH"
+    nist_mapping: "ID.AM-02"
+
+  - id: "COMP-03"
+    cra_ref: "Annex I, Part II, §1"
+    title: "Component must have a supplier"
+    description: >
+      CRA requires supplier information for all components to support
+      supply chain risk management and third-party accountability.
+    field: "supplier"
+    check: "not_empty"
+    severity: "HIGH"
+    nist_mapping: "ID.AM-04"
+
+  - id: "COMP-04"
+    cra_ref: "Annex I, Part II, §1"
+    title: "Component must have a license declared"
+    description: >
+      CRA requires documentation of all component licenses to ensure
+      legal compliance and supply chain transparency.
+    field: "licenses"
+    check: "not_empty_list"
+    severity: "MEDIUM"
+    nist_mapping: "ID.AM-02"
+
+  - id: "COMP-05"
+    cra_ref: "Annex I, Part II, §1"
+    title: "Component must have an integrity hash"
+    description: >
+      CRA requires integrity verification of all components.
+      Hash values (SHA-256 or stronger) enable verification that
+      components have not been tampered with.
+    field: "hashes"
+    check: "not_empty_list"
+    severity: "HIGH"
+    nist_mapping: "PR.DS-01"
+
+  - id: "COMP-06"
+    cra_ref: "Annex I, Part II, §1"
+    title: "Component must have a PURL"
+    description: >
+      A Package URL (PURL) provides a standardized, machine-readable
+      identifier for each component enabling automated vulnerability
+      tracking against databases such as NVD and OSV.
+    field: "purl"
+    check: "not_empty"
+    severity: "MEDIUM"
+    nist_mapping: "ID.AM-02"
+
+# ─────────────────────────────────────────────
+# SBOM-LEVEL RULES
+# Applied to the SBOM as a whole document
+# ─────────────────────────────────────────────
+sbom_rules:
+
+  - id: "SBOM-01"
+    cra_ref: "Annex I, Part II, §1"
+    title: "SBOM must declare the project name"
+    description: >
+      The SBOM must identify the top-level product it describes.
+      Anonymous SBOMs cannot be traced to a specific product.
+    field: "project_name"
+    check: "not_unknown"
+    severity: "HIGH"
+    nist_mapping: "ID.AM-02"
+
+  - id: "SBOM-02"
+    cra_ref: "Annex I, Part II, §1"
+    title: "SBOM must declare the project version"
+    description: >
+      Version information at the SBOM level is required to associate
+      the component inventory with a specific product release.
+    field: "project_version"
+    check: "not_unknown"
+    severity: "HIGH"
+    nist_mapping: "ID.AM-08"
+
+  - id: "SBOM-03"
+    cra_ref: "Annex I, Part II, §1"
+    title: "SBOM must include a generation timestamp"
+    description: >
+      A timestamp confirms when the SBOM was generated, enabling
+      manufacturers to demonstrate currency of their component inventory.
+    field: "timestamp"
+    check: "not_unknown"
+    severity: "MEDIUM"
+    nist_mapping: "ID.AM-08"
+
+  - id: "SBOM-04"
+    cra_ref: "Annex I, Part II, §1"
+    title: "SBOM must identify the tool used to generate it"
+    description: >
+      Identifying the generation tool supports reproducibility and
+      auditability of the SBOM generation process.
+    field: "tool"
+    check: "not_unknown"
+    severity: "LOW"
+    nist_mapping: "ID.AM-08"
+
+  - id: "SBOM-05"
+    cra_ref: "Annex I, Part II, §1"
+    title: "SBOM must contain at least one component"
+    description: >
+      An empty SBOM provides no supply chain visibility and cannot
+      satisfy the CRA documentation requirement.
+    field: "total_components"
+    check: "greater_than_zero"
+    severity: "HIGH"
+    nist_mapping: "ID.AM-02"
+
+# ─────────────────────────────────────────────
+# SEVERITY DEFINITIONS
+# ─────────────────────────────────────────────
+severity_definitions:
+  HIGH:
+    description: "Direct CRA violation — product cannot be CE-marked without remediation"
+    action: "Must fix before EU market entry"
+    color: "red"
+  MEDIUM:
+    description: "Significant CRA gap — increases regulatory risk"
+    action: "Should fix within 90 days"
+    color: "yellow"
+  LOW:
+    description: "Minor CRA gap — best practice recommendation"
+    action: "Fix within 180 days"
+    color: "green"
+
+# ─────────────────────────────────────────────
+# SCORING
+# ─────────────────────────────────────────────
+scoring:
+  weights:
+    HIGH: 3
+    MEDIUM: 2
+    LOW: 1
+  thresholds:
+    compliant: 90        # >= 90% = CRA compliant
+    partial: 70          # >= 70% = partially compliant
+    non_compliant: 0     # < 70% = non-compliant

@@ -127,6 +127,8 @@ def _build_html(
     # Build CVE rows
     cve_rows = ""
     for cve in unique_cves:
+        cwe_display = getattr(cve, 'cwe_id', 'Unknown')
+        cwe_name_display = getattr(cve, 'cwe_name', 'Not classified')
         cve_rows += f"""
         <tr>
             <td><a href="https://nvd.nist.gov/vuln/detail/{cve.cve_id}" 
@@ -134,6 +136,8 @@ def _build_html(
             <td><code>{cve.component}</code></td>
             <td>{_severity_badge(cve.severity)}</td>
             <td><strong>{cve.cvss_score}</strong></td>
+            <td><code>{cwe_display}</code><br>
+                <span style="font-size:11px;color:#666;">{cwe_name_display}</span></td>
             <td>{cve.published}</td>
             <td style="font-size:12px;">{cve.description[:120]}...</td>
         </tr>"""
@@ -356,6 +360,7 @@ def _build_html(
                     <th>Component</th>
                     <th>Severity</th>
                     <th>CVSS Score</th>
+                    <th>CWE (Root Cause)</th>
                     <th>Published</th>
                     <th>Description</th>
                 </tr>

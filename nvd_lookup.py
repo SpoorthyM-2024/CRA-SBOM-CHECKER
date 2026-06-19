@@ -34,6 +34,8 @@ class CVE:
     published: str
     component: str
     version: str
+    cwe_id: str = "Unknown"
+    cwe_name: str = "Unknown"
 
 
 def lookup_component(
@@ -122,6 +124,9 @@ def _parse_cve_response(
         # Get severity and CVSS score
         severity, score = _extract_severity(cve_data)
 
+        # Get CWE root cause classification
+        cwe_id, cwe_name = _extract_cwe(cve_data)
+
         # Get published date
         published = cve_data.get("published", "unknown")[:10]
 
@@ -133,6 +138,8 @@ def _parse_cve_response(
             published=published,
             component=component_name,
             version=version,
+            cwe_id=cwe_id,
+            cwe_name=cwe_name,
         ))
 
     return cves
@@ -151,6 +158,40 @@ def _extract_severity(cve_data: dict) -> tuple:
             return severity, float(score)
 
     return "UNKNOWN", 0.0
+
+def _extract_cwe(cve_data: dict) -> tuple:
+    """Extracts the CWE (root cause weakness type) from CVE data."""
+    weaknesses = cve_data.get("weaknesses", [])
+    for weakness in weaknesses:
+        descriptions = weakness.get("description", [])
+        for d in descriptions:
+            if d.get("lang") == "en":
+                cwe_id = d.get("value", "Unknown")
+                cwe_name = _CWE_NAMES.get(cwe_id, "Unknown weakness type")
+                return cwe_id, cwe_name
+    return "Unknown", "Not classified"
+
+
+_CWE_NAMES = {
+    "CWE-79": "Cross-Site Scripting (XSS)",
+    "CWE-89": "SQL Injection",
+    "CWE-78": "OS Command Injection",
+    "CWE-22": "Path Traversal",
+    "CWE-119": "Buffer Overflow",
+    "CWE-120": "Buffer Copy without Checking Size",
+    "CWE-125": "Out-of-bounds Read",
+    "CWE-787": "Out-of-bounds Write",
+    "CWE-200": "Information Exposure",
+    "CWE-269": "Improper Privilege Management",
+    "CWE-287": "Improper Authentication",
+    "CWE-352": "Cross-Site Request Forgery (CSRF)",
+    "CWE-416": "Use After Free",
+    "CWE-434": "Unrestricted File Upload",
+    "CWE-502": "Deserialization of Untrusted Data",
+    "CWE-798": "Use of Hard-coded Credentials",
+    "CWE-918": "Server-Side Request Forgery (SSRF)",
+    "CWE-noinfo": "Insufficient Information",
+}
 
 
 def lookup_all_components(
@@ -229,10 +270,10 @@ def print_results(results: dict) -> None:
     # CVE table
     table = Table(title="CVE Findings", show_lines=True)
     table.add_column("CVE ID", style="cyan", width=16)
-    table.add_column("Component", width=20)
+    table.add_column("Component", width=18)
     table.add_column("Severity", width=10)
     table.add_column("Score", width=6)
-    table.add_column("Published", width=12)
+    table.add_column("CWE (Root Cause)", width=22)
     table.add_column("Description")
 
     for cve in results["all_cves"]:
@@ -250,7 +291,7 @@ def print_results(results: dict) -> None:
             cve.component,
             f"[{sev_style}]{cve.severity}[/{sev_style}]",
             f"[{sev_style}]{cve.cvss_score}[/{sev_style}]",
-            cve.published,
+            f"{cve.cwe_id}\n[dim]{cve.cwe_name}[/dim]",
             desc,
         )
 

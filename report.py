@@ -139,7 +139,13 @@ def _build_html(
             <td><code>{cwe_display}</code><br>
                 <span style="font-size:11px;color:#666;">{cwe_name_display}</span></td>
             <td>{cve.published}</td>
-            <td style="font-size:12px;">{cve.description[:120]}...</td>
+            <td style="font-size:12px;">
+    <span class="short-desc">{cve.description[:150]}...</span>
+    <span class="full-desc" style="display:none;">{cve.description}</span>
+    <br><a href="#" class="show-more" style="font-size:11px;color:#1565c0;" 
+    onclick="toggleDesc(this); return false;">Show more</a>
+</td>
+
         </tr>"""
 
     return f"""<!DOCTYPE html>
@@ -198,6 +204,23 @@ def _build_html(
     </style>
 </head>
 <body>
+<script>
+function toggleDesc(link) {{
+    var td = link.parentElement;
+    var short = td.querySelector('.short-desc');
+    var full = td.querySelector('.full-desc');
+    if (full.style.display === 'none') {{
+        full.style.display = 'inline';
+        short.style.display = 'none';
+        link.textContent = 'Show less';
+    }} else {{
+        full.style.display = 'none';
+        short.style.display = 'inline';
+        link.textContent = 'Show more';
+    }}
+}}
+</script>
+
 
 <div class="header">
     <h1>CRA SBOM Compliance Report</h1>

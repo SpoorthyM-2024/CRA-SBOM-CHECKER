@@ -118,7 +118,7 @@ def _parse_cve_response(
         description = "No description available"
         for d in cve_data.get("descriptions", []):
             if d.get("lang") == "en":
-                description = d.get("value", "")[:200]
+                description = d.get("value", "") [:5000]
                 break
 
         # Get severity and CVSS score
@@ -189,6 +189,8 @@ _CWE_NAMES = {
     "CWE-434": "Unrestricted File Upload",
     "CWE-502": "Deserialization of Untrusted Data",
     "CWE-798": "Use of Hard-coded Credentials",
+    "CWE-829": "Inclusion of Functionality from Untrusted Control Sphere",
+    "CWE-840": "Business Logic Errors",
     "CWE-918": "Server-Side Request Forgery (SSRF)",
     "CWE-noinfo": "Insufficient Information",
 }
